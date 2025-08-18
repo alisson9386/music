@@ -1,49 +1,11 @@
-import yt_dlp
 import librosa
 import numpy as np
 import os
 import streamlit as st
-import shutil
-import requests
 import webbrowser
 from repertorio import REPERTORIO
 
 # ----------------- FUNÇÕES -----------------
-
-import requests
-
-def baixar_audio_rapidapi(video_url):
-    # Extrair o ID do vídeo (parte depois de v=)
-    import re
-    match = re.search(r"v=([a-zA-Z0-9_-]+)", video_url)
-    if not match:
-        raise Exception("Não foi possível extrair o ID do vídeo.")
-    video_id = match.group(1)
-
-    url = "https://youtube-mp36.p.rapidapi.com/dl"
-    querystring = {"id": video_id}
-
-    headers = {
-        "x-rapidapi-key": "58ed6c4800mshc61ca5daef10d9ep11e2ffjsn82fc7b099137",   # << coloque sua chave aqui
-        "x-rapidapi-host": "youtube-mp36.p.rapidapi.com"
-    }
-
-    response = requests.get(url, headers=headers, params=querystring)
-    data = response.json()
-    print("🔎 Resposta da API:", data)
-    if data.get("status") != "ok":
-        raise Exception("Erro ao obter link de download")
-
-    # Faz o download do MP3
-    mp3_url = data["link"]
-    r = requests.get(mp3_url, stream=True)
-    arquivo = "musica.mp3"
-    with open(arquivo, "wb") as f:
-        for chunk in r.iter_content(1024):
-            f.write(chunk)
-
-    return arquivo
-
 
 def estimar_bpm_multiplos(caminho_audio):
     y, sr = librosa.load(caminho_audio, duration=60)
@@ -80,36 +42,31 @@ def pesquisar_cifraclub(musica):
 
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
-
-st.title("🎶 Acervo de músicas - Otva Sta Luzia")
+st.title("🎶 Acervo de músicas - alisson9386")
 
 opcao = st.radio(
     "Selecione uma opção:",
-    ["🔗 Analisar música via link do YouTube", "📂 Pesquisar no repertório pré-definido"]
+    ["⬆️ Analisar música via upload", "📂 Pesquisar no repertório pré-definido"]
 )
 
-if opcao == "🔗 Analisar música via link do YouTube":
-    link = st.text_input("Cole o link do YouTube aqui:")
-    if st.button("Analisar Link"):
-        if not link.strip():
-            st.warning("⚠ Cole um link válido primeiro!")
-        else:
-            with st.spinner("⬇ Baixando e analisando..."):
-                arquivo_mp3 = None
-                try:
-                    arquivo_mp3 = baixar_audio_rapidapi(link)
-                    bpm_lista = estimar_bpm_multiplos(arquivo_mp3)
-                    tom = estimar_tom(arquivo_mp3)
-
-                    st.success("✅ Análise concluída!")
-                    st.write(f"**BPMs estimados:** {bpm_lista}")
-                    st.write(f"**Tom estimado:** {tom}")
-
-                except Exception as e:
-                    st.error(f"❌ Erro: {e}")
-                finally:
-                    if arquivo_mp3 and os.path.exists(arquivo_mp3):
-                        os.remove(arquivo_mp3)
+if opcao == "⬆️ Analisar música via upload":
+    arquivo = st.file_uploader("Envie a música (MP3 ou M4A)", type=["mp3", "m4a"])
+    if arquivo:
+        caminho = f"temp_{arquivo.name}"
+        with open(caminho, "wb") as f:
+            f.write(arquivo.getbuffer())
+        with st.spinner("⬇ Analisando música..."):
+            try:
+                bpm_lista = estimar_bpm_multiplos(caminho)
+                tom = estimar_tom(caminho)
+                st.success("✅ Análise concluída!")
+                st.write(f"**BPMs estimados:** {bpm_lista}")
+                st.write(f"**Tom estimado:** {tom}")
+            except Exception as e:
+                st.error(f"❌ Erro ao analisar a música: {e}")
+            finally:
+                if os.path.exists(caminho):
+                    os.remove(caminho)
 
 elif opcao == "📂 Pesquisar no repertório pré-definido":
     termo_busca = st.text_input("🔍 Digite o nome da música ou artista:")
