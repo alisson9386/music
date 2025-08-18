@@ -3,15 +3,24 @@ import librosa
 import numpy as np
 import os
 import streamlit as st
+import shutil
 import webbrowser
 from repertorio import REPERTORIO
 
 # ----------------- FUNÇÕES -----------------
+
 def baixar_audio(link):
     """
     Baixa o áudio do YouTube e converte para MP3 usando yt-dlp + FFmpeg.
     Retorna o caminho do arquivo final.
+    Lança exceção detalhada em caso de falha.
     """
+
+    # Verifica se FFmpeg está disponível
+    ffmpeg_path = shutil.which("ffmpeg")
+    if ffmpeg_path is None:
+        raise Exception("❌ FFmpeg não encontrado no ambiente. Streamlit Cloud precisa suportar FFmpeg.")
+
     ydl_opts = {
         'format': 'bestaudio',
         'noplaylist': True,
@@ -27,19 +36,25 @@ def baixar_audio(link):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Extrai info sem baixar para gerar o nome do arquivo
+        # Tenta extrair info sem baixar para gerar o nome do arquivo
         info = ydl.extract_info(link, download=False)
+        if info is None:
+            raise Exception("❌ Não foi possível extrair informações do vídeo. Verifique o link.")
+
         arquivo_mp3 = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
 
         # Baixa o vídeo/áudio e converte para mp3
-        ydl.download([link])
+        try:
+            ydl.download([link])
+        except Exception as e:
+            raise Exception(f"❌ Erro ao baixar/converter o áudio: {e}")
 
     # Confere se o arquivo realmente foi criado
     if os.path.exists(arquivo_mp3):
         return arquivo_mp3
     else:
         raise Exception("❌ Não foi possível capturar o nome do arquivo final.")
-
+    
 def estimar_bpm_multiplos(caminho_audio):
     y, sr = librosa.load(caminho_audio, duration=60)
     tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
