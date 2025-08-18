@@ -30,7 +30,7 @@ def baixar_audio_rapidapi(video_url):
 
     response = requests.get(url, headers=headers, params=querystring)
     data = response.json()
-
+    print("🔎 Resposta da API:", data)
     if data.get("status") != "ok":
         raise Exception("Erro ao obter link de download")
 
