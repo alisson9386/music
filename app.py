@@ -195,6 +195,6 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
 # ----------------- Rodapé -----------------
 st.markdown("""
     <div style="text-align:center; margin-top:30px; font-size:12px; color:gray;">
-        © 2025 <a href="https://github.com/SEU_GITHUB" target="_blank" style="color:gray;">Seu Nome</a>
+        © 2025 <a href="https://github.com/alisson9386" target="_blank" style="color:gray;">Alisson Deives</a>
     </div>
 """, unsafe_allow_html=True)
