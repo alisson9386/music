@@ -12,17 +12,19 @@ from repertorio import REPERTORIO
 def baixar_audio(link):
     """
     Baixa o áudio do YouTube sem conversão para MP3.
+    Funciona no Streamlit Cloud e local.
     Retorna o caminho do arquivo final.
-    Funciona no Streamlit Cloud sem precisar do FFmpeg.
     """
 
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio[ext=m4a]/bestaudio/best',
         'noplaylist': True,
         'outtmpl': 'musica.%(ext)s',
         'quiet': True,
         'no_warnings': True,
         'ignoreerrors': True,
+        'geo_bypass': True,
+        'nocheckcertificate': True,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -31,7 +33,6 @@ def baixar_audio(link):
         if info is None:
             raise Exception("❌ Não foi possível extrair informações do vídeo. Verifique o link.")
 
-        # Define o caminho final do arquivo
         arquivo_final = ydl.prepare_filename(info)
 
         # Baixa o áudio
