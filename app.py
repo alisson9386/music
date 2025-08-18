@@ -15,7 +15,7 @@ def baixar_audio(link):
             saida_final = d['filename']
 
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio',  # pega qualquer áudio disponível
         'noplaylist': True,
         'outtmpl': 'musica.%(ext)s',
         'progress_hooks': [hook_progresso],
@@ -25,7 +25,8 @@ def baixar_audio(link):
             'preferredquality': '192',
         }],
         'quiet': True,
-        'no_warnings': True
+        'no_warnings': True,
+        'ignoreerrors': True,  # não quebra se o vídeo não estiver disponível
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
@@ -61,21 +62,18 @@ def estimar_tom(caminho_audio):
     return tom_estimado
 
 def pesquisar_youtube(musica):
-    """Retorna link para pesquisa no YouTube"""
     query = musica.replace(" ", "+").replace("(", "").replace(")", "")
     return f"https://www.youtube.com/results?search_query={query}"
 
 def pesquisar_cifraclub(musica):
-    """Retorna link para pesquisa no Cifra Club"""
     query = musica.split("(")[0].strip().replace(" ", "-").lower()
     return f"https://www.cifraclub.com.br/?q={query}"
 
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
 
-st.title("🎶 Acervo de Músicas - Oitava Music Sta Luzia")
+st.title("🎶 Analisador de Música")
 
-# Menu inicial
 opcao = st.radio(
     "Selecione uma opção:",
     ["🔗 Analisar música via link do YouTube", "📂 Pesquisar no repertório pré-definido"]
@@ -105,11 +103,8 @@ if opcao == "🔗 Analisar música via link do YouTube":
                         os.remove(arquivo_mp3)
 
 elif opcao == "📂 Pesquisar no repertório pré-definido":
-
-    # Campo de busca com filtro
     termo_busca = st.text_input("🔍 Digite o nome da música ou artista:")
-    
-    # Função de filtro aprimorada
+
     def filtrar_musicas(termo):
         termo = termo.lower().strip()
         if not termo:
@@ -119,19 +114,16 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
             if (termo in musica.lower()) or 
                (any(palavra in musica.lower() for palavra in termo.split()))
         ]
-    
-    # Aplica o filtro
+
     musicas_filtradas = filtrar_musicas(termo_busca)
-    
+
     if not musicas_filtradas:
         st.warning("Nenhuma música encontrada. Tente outro termo.")
     else:
         escolha = st.selectbox("🎵 Selecione uma música:", musicas_filtradas)
-        
         if escolha:
             st.success(f"✅ Você selecionou: **{escolha}**")
-        
-        # ----------------- Botões responsivos -----------------
+
         col1, col2 = st.columns(2)
 
         # Botão do YouTube
@@ -188,34 +180,9 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
                 </a>
             ''', unsafe_allow_html=True)
 
-
-
-# ----------------- RODAPÉ FIXO -----------------
+# ----------------- Rodapé -----------------
 st.markdown("""
-    <style>
-        .footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: #0E1117;
-            color: white;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 12px;
-            border-top: 1px solid #e0e0e0;
-        }
-        .footer a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .footer a:hover {
-            color: #000;
-            text-decoration: underline;
-        }
-    </style>
-    <div class="footer">
-        © 2025 <a href="https://github.com/alisson9386" target="_blank">Alisson Deives</a>
+    <div style="text-align:center; margin-top:30px; font-size:12px; color:gray;">
+        © 2025 <a href="https://github.com/SEU_GITHUB" target="_blank" style="color:gray;">Seu Nome</a>
     </div>
 """, unsafe_allow_html=True)
