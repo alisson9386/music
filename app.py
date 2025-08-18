@@ -136,18 +136,17 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
 
         with col1:
             url_youtube = pesquisar_youtube(escolha)
-            if st.button("🔍 Pesquisar no YouTube"):
-                st.experimental_set_query_params()  # reseta query params se necessário
-                st.markdown(f"[Clique aqui para abrir no YouTube]({url_youtube})", unsafe_allow_html=True)
+            st.markdown(
+                f'<a href="{url_youtube}" target="_blank"><button style="padding:10px; font-size:16px;">🔍 Pesquisar no YouTube</button></a>',
+                unsafe_allow_html=True
+            )
 
         with col2:
             url_cifra = pesquisar_cifraclub(escolha)
-            if st.button("🎼 Ver cifra no Cifra Club"):
-                st.experimental_set_query_params()
-                st.markdown(f"[Clique aqui para abrir no Cifra Club]({url_cifra})", unsafe_allow_html=True)
-
-
-
+            st.markdown(
+                f'<a href="{url_cifra}" target="_blank"><button style="padding:10px; font-size:16px;">🎼 Ver cifra no Cifra Club</button></a>',
+                unsafe_allow_html=True
+            )
 
 # ----------------- RODAPÉ FIXO -----------------
 st.markdown("""
