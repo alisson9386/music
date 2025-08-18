@@ -11,47 +11,38 @@ from repertorio import REPERTORIO
 
 def baixar_audio(link):
     """
-    Baixa o áudio do YouTube e converte para MP3 usando yt-dlp + FFmpeg.
+    Baixa o áudio do YouTube sem conversão para MP3.
     Retorna o caminho do arquivo final.
-    Lança exceção detalhada em caso de falha.
+    Funciona no Streamlit Cloud sem precisar do FFmpeg.
     """
 
-    # Verifica se FFmpeg está disponível
-    ffmpeg_path = shutil.which("ffmpeg")
-    if ffmpeg_path is None:
-        raise Exception("❌ FFmpeg não encontrado no ambiente. Streamlit Cloud precisa suportar FFmpeg.")
-
     ydl_opts = {
-        'format': 'bestaudio',
+        'format': 'bestaudio/best',
         'noplaylist': True,
         'outtmpl': 'musica.%(ext)s',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
         'quiet': True,
         'no_warnings': True,
         'ignoreerrors': True,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Tenta extrair info sem baixar para gerar o nome do arquivo
+        # Extrai info sem baixar para gerar o nome do arquivo
         info = ydl.extract_info(link, download=False)
         if info is None:
             raise Exception("❌ Não foi possível extrair informações do vídeo. Verifique o link.")
 
-        arquivo_mp3 = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
+        # Define o caminho final do arquivo
+        arquivo_final = ydl.prepare_filename(info)
 
-        # Baixa o vídeo/áudio e converte para mp3
+        # Baixa o áudio
         try:
             ydl.download([link])
         except Exception as e:
-            raise Exception(f"❌ Erro ao baixar/converter o áudio: {e}")
+            raise Exception(f"❌ Erro ao baixar o áudio: {e}")
 
     # Confere se o arquivo realmente foi criado
-    if os.path.exists(arquivo_mp3):
-        return arquivo_mp3
+    if os.path.exists(arquivo_final):
+        return arquivo_final
     else:
         raise Exception("❌ Não foi possível capturar o nome do arquivo final.")
     
