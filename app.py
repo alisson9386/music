@@ -73,7 +73,7 @@ def pesquisar_cifraclub(musica):
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
 
-st.title("🎶 Analisador de Música")
+st.title("🎶 Acervo de Músicas - Oitava Music Sta Luzia")
 
 # Menu inicial
 opcao = st.radio(
