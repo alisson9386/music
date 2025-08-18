@@ -1,7 +1,6 @@
 streamlit==1.26.0
-numpy==1.25.2
+numpy
 librosa==0.10.3
-scipy==1.11.2
-soundfile==0.12.1
-resampy==0.4.2
-yt-dlp==2025.6.30
+scipy
+soundfile
+yt-dlp
