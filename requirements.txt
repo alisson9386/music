@@ -1,0 +1,4 @@
+librosa==0.11.0
+numpy==1.26.1
+streamlit==1.48.1
+yt-dlp==2025.6.30
