@@ -24,7 +24,7 @@ def baixar_audio_rapidapi(video_url):
     querystring = {"id": video_id}
 
     headers = {
-        "x-rapidapi-key": "58ed6c4800mshc61ca5daef10d9ep11e2ffjsn82fc7b099137",   # << coloque sua chave aqui
+        "x-rapidapi-key": "key_rapidi",   # << coloque sua chave aqui
         "x-rapidapi-host": "youtube-mp36.p.rapidapi.com"
     }
 
