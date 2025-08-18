@@ -134,19 +134,52 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
         # ----------------- Botões de pesquisa -----------------
         col1, col2 = st.columns(2)
 
+        # Botão do YouTube
         with col1:
             url_youtube = pesquisar_youtube(escolha)
-            st.markdown(
-                f'<a href="{url_youtube}" target="_blank"><button style="padding:10px; font-size:16px;">🔍 Pesquisar no YouTube</button></a>',
-                unsafe_allow_html=True
-            )
+            st.markdown(f'''
+                <a href="{url_youtube}" target="_blank" style="text-decoration: none;">
+                    <div style="
+                        background-color:#FF0000; 
+                        color:white; 
+                        padding:12px 20px; 
+                        border-radius:8px; 
+                        text-align:center; 
+                        font-weight:bold; 
+                        font-size:16px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                        transition: all 0.2s;
+                    "
+                    onmouseover="this.style.backgroundColor='#CC0000'" 
+                    onmouseout="this.style.backgroundColor='#FF0000'">
+                        🔍 Pesquisar no YouTube
+                    </div>
+                </a>
+            ''', unsafe_allow_html=True)
 
+        # Botão do Cifra Club
         with col2:
             url_cifra = pesquisar_cifraclub(escolha)
-            st.markdown(
-                f'<a href="{url_cifra}" target="_blank"><button style="padding:10px; font-size:16px;">🎼 Ver cifra no Cifra Club</button></a>',
-                unsafe_allow_html=True
-            )
+            st.markdown(f'''
+                <a href="{url_cifra}" target="_blank" style="text-decoration: none;">
+                    <div style="
+                        background-color:#4CAF50; 
+                        color:white; 
+                        padding:12px 20px; 
+                        border-radius:8px; 
+                        text-align:center; 
+                        font-weight:bold; 
+                        font-size:16px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                        transition: all 0.2s;
+                    "
+                    onmouseover="this.style.backgroundColor='#45A049'" 
+                    onmouseout="this.style.backgroundColor='#4CAF50'">
+                        🎼 Ver cifra no Cifra Club
+                    </div>
+                </a>
+            ''', unsafe_allow_html=True)
+
 
 # ----------------- RODAPÉ FIXO -----------------
 st.markdown("""
