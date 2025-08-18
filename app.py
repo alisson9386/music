@@ -46,10 +46,10 @@ st.title("🎶 Acervo de músicas - alisson9386")
 
 opcao = st.radio(
     "Selecione uma opção:",
-    ["⬆️ Analisar música via upload", "📂 Pesquisar no repertório pré-definido"]
+    ["⬆️ Analisar música via upload", "📂 Pesquisar no repertório Oitava Music pré-definido"]
 )
 
-if opcao == "⬆️ Analisar música via upload":
+if opcao == "⬆️ Analisar BPM e Tom de música via upload":
     arquivo = st.file_uploader("Envie a música (MP3 ou M4A)", type=["mp3", "m4a"])
     if arquivo:
         caminho = f"temp_{arquivo.name}"
@@ -68,7 +68,7 @@ if opcao == "⬆️ Analisar música via upload":
                 if os.path.exists(caminho):
                     os.remove(caminho)
 
-elif opcao == "📂 Pesquisar no repertório pré-definido":
+elif opcao == "📂 Pesquisar no repertório Oitava Music pré-definido":
     termo_busca = st.text_input("🔍 Digite o nome da música ou artista:")
 
     def filtrar_musicas(termo):
