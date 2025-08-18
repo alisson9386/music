@@ -133,14 +133,13 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🔍 Pesquisar no YouTube"):
-                url = pesquisar_youtube(escolha)
-                webbrowser.open_new_tab(url)
-        
+            url_youtube = pesquisar_youtube(escolha)
+            st.markdown(f'<a href="{url_youtube}" target="_blank"><button>🔍 Pesquisar no YouTube</button></a>', unsafe_allow_html=True)
+
         with col2:
-            if st.button("🎼 Ver cifra no Cifra Club"):
-                url = pesquisar_cifraclub(escolha)
-                webbrowser.open_new_tab(url)
+            url_cifra = pesquisar_cifraclub(escolha)
+            st.markdown(f'<a href="{url_cifra}" target="_blank"><button>🎼 Ver cifra no Cifra Club</button></a>', unsafe_allow_html=True)
+
 
 # ----------------- RODAPÉ FIXO -----------------
 st.markdown("""
