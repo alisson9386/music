@@ -4,50 +4,47 @@ import numpy as np
 import os
 import streamlit as st
 import shutil
+import requests
 import webbrowser
 from repertorio import REPERTORIO
 
 # ----------------- FUNÇÕES -----------------
 
-def baixar_audio(link):
-    """
-    Baixa o áudio do YouTube sem conversão para MP3.
-    Funciona no Streamlit Cloud e local.
-    Retorna o caminho do arquivo final.
-    """
+import requests
 
-    ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio/best',
-        'noplaylist': True,
-        'outtmpl': 'musica.%(ext)s',
-        'quiet': True,
-        'cookiefile': 'cookies.txt',
-        'no_warnings': True,
-        'ignoreerrors': True,
-        'geo_bypass': True,
-        'nocheckcertificate': True,
+def baixar_audio_rapidapi(video_url):
+    # Extrair o ID do vídeo (parte depois de v=)
+    import re
+    match = re.search(r"v=([a-zA-Z0-9_-]+)", video_url)
+    if not match:
+        raise Exception("Não foi possível extrair o ID do vídeo.")
+    video_id = match.group(1)
+
+    url = "https://youtube-mp36.p.rapidapi.com/dl"
+    querystring = {"id": video_id}
+
+    headers = {
+        "x-rapidapi-key": "58ed6c4800mshc61ca5daef10d9ep11e2ffjsn82fc7b099137",   # << coloque sua chave aqui
+        "x-rapidapi-host": "youtube-mp36.p.rapidapi.com"
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Extrai info sem baixar para gerar o nome do arquivo
-        info = ydl.extract_info(link, download=False)
-        if info is None:
-            raise Exception("❌ Não foi possível extrair informações do vídeo. Verifique o link.")
+    response = requests.get(url, headers=headers, params=querystring)
+    data = response.json()
 
-        arquivo_final = ydl.prepare_filename(info)
+    if data.get("status") != "ok":
+        raise Exception("Erro ao obter link de download")
 
-        # Baixa o áudio
-        try:
-            ydl.download([link])
-        except Exception as e:
-            raise Exception(f"❌ Erro ao baixar o áudio: {e}")
+    # Faz o download do MP3
+    mp3_url = data["link"]
+    r = requests.get(mp3_url, stream=True)
+    arquivo = "musica.mp3"
+    with open(arquivo, "wb") as f:
+        for chunk in r.iter_content(1024):
+            f.write(chunk)
 
-    # Confere se o arquivo realmente foi criado
-    if os.path.exists(arquivo_final):
-        return arquivo_final
-    else:
-        raise Exception("❌ Não foi possível capturar o nome do arquivo final.")
-    
+    return arquivo
+
+
 def estimar_bpm_multiplos(caminho_audio):
     y, sr = librosa.load(caminho_audio, duration=60)
     tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
@@ -84,7 +81,7 @@ def pesquisar_cifraclub(musica):
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
 
-st.title("🎶 Analisador de Música")
+st.title("🎶 Acervo de músicas - Otva Sta Luzia")
 
 opcao = st.radio(
     "Selecione uma opção:",
@@ -100,7 +97,7 @@ if opcao == "🔗 Analisar música via link do YouTube":
             with st.spinner("⬇ Baixando e analisando..."):
                 arquivo_mp3 = None
                 try:
-                    arquivo_mp3 = baixar_audio(link)
+                    arquivo_mp3 = baixar_audio_rapidapi(link)
                     bpm_lista = estimar_bpm_multiplos(arquivo_mp3)
                     tom = estimar_tom(arquivo_mp3)
 
