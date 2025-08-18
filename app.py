@@ -21,6 +21,7 @@ def baixar_audio(link):
         'noplaylist': True,
         'outtmpl': 'musica.%(ext)s',
         'quiet': True,
+        'cookiefile': 'cookies.txt',
         'no_warnings': True,
         'ignoreerrors': True,
         'geo_bypass': True,
