@@ -8,17 +8,14 @@ from repertorio import REPERTORIO
 
 # ----------------- FUNÇÕES -----------------
 def baixar_audio(link):
-    saida_final = None
-    def hook_progresso(d):
-        nonlocal saida_final
-        if d['status'] == 'finished':
-            saida_final = d['filename']
-
+    """
+    Baixa o áudio do YouTube e converte para MP3 usando yt-dlp + FFmpeg.
+    Retorna o caminho do arquivo final.
+    """
     ydl_opts = {
-        'format': 'bestaudio',  # pega qualquer áudio disponível
+        'format': 'bestaudio',
         'noplaylist': True,
         'outtmpl': 'musica.%(ext)s',
-        'progress_hooks': [hook_progresso],
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -26,13 +23,20 @@ def baixar_audio(link):
         }],
         'quiet': True,
         'no_warnings': True,
-        'ignoreerrors': True,  # não quebra se o vídeo não estiver disponível
+        'ignoreerrors': True,
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Extrai info sem baixar para gerar o nome do arquivo
+        info = ydl.extract_info(link, download=False)
+        arquivo_mp3 = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
+
+        # Baixa o vídeo/áudio e converte para mp3
         ydl.download([link])
-    if saida_final:
-        saida_final = saida_final.rsplit('.', 1)[0] + '.mp3'
-        return saida_final
+
+    # Confere se o arquivo realmente foi criado
+    if os.path.exists(arquivo_mp3):
+        return arquivo_mp3
     else:
         raise Exception("❌ Não foi possível capturar o nome do arquivo final.")
 
