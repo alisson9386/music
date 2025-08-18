@@ -46,7 +46,7 @@ st.title("🎶 Acervo de músicas - alisson9386")
 
 opcao = st.radio(
     "Selecione uma opção:",
-    ["⬆️ Analisar música via upload", "📂 Pesquisar no repertório Oitava Music pré-definido"]
+    ["⬆️ Analisar BPM e Tom de música via upload", "📂 Pesquisar no repertório Oitava Music pré-definido"]
 )
 
 if opcao == "⬆️ Analisar BPM e Tom de música via upload":
