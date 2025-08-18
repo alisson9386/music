@@ -131,17 +131,21 @@ elif opcao == "📂 Pesquisar no repertório pré-definido":
         if escolha:
             st.success(f"✅ Você selecionou: **{escolha}**")
         
+        # ----------------- Botões de pesquisa -----------------
         col1, col2 = st.columns(2)
 
         with col1:
             url_youtube = pesquisar_youtube(escolha)
             if st.button("🔍 Pesquisar no YouTube"):
-                st.markdown(f"[Abrir YouTube]({url_youtube})", unsafe_allow_html=True)
+                st.experimental_set_query_params()  # reseta query params se necessário
+                st.markdown(f"[Clique aqui para abrir no YouTube]({url_youtube})", unsafe_allow_html=True)
 
         with col2:
             url_cifra = pesquisar_cifraclub(escolha)
             if st.button("🎼 Ver cifra no Cifra Club"):
-                st.markdown(f"[Abrir Cifra Club]({url_cifra})", unsafe_allow_html=True)
+                st.experimental_set_query_params()
+                st.markdown(f"[Clique aqui para abrir no Cifra Club]({url_cifra})", unsafe_allow_html=True)
+
 
 
 
