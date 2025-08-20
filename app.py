@@ -1,11 +1,21 @@
 import librosa
 import numpy as np
 import os
+import requests
 import streamlit as st
 import webbrowser
 from repertorio import REPERTORIO
 
 # ----------------- FUNÇÕES -----------------
+
+def baixar_audio_api(video_url):
+    url = "http://127.0.0.1:8000/baixar"
+    r = requests.get(url, params={"video_url": video_url})
+    if r.status_code == 200:
+        with open("musica.mp3", "wb") as f:
+            f.write(r.content)
+        return "musica.mp3"
+    raise Exception(f"Erro no download via API: {r.status_code}")
 
 def estimar_bpm_multiplos(caminho_audio):
     y, sr = librosa.load(caminho_audio, duration=60)
@@ -46,16 +56,20 @@ st.title("🎶 Acervo de músicas - alisson9386")
 
 opcao = st.radio(
     "Selecione uma opção:",
-    ["⬆️ Analisar BPM e Tom de música via upload", "📂 Pesquisar no repertório Oitava Music pré-definido"]
+    [
+        "⬆️ Upload de arquivo", 
+        #"🔗 YouTube (via API)", 
+        "📂 Repertório pré-definido"]
 )
 
-if opcao == "⬆️ Analisar BPM e Tom de música via upload":
+# ---- Upload direto ----
+if opcao == "⬆️ Upload de arquivo":
     arquivo = st.file_uploader("Envie a música (MP3 ou M4A)", type=["mp3", "m4a"])
     if arquivo:
         caminho = f"temp_{arquivo.name}"
         with open(caminho, "wb") as f:
             f.write(arquivo.getbuffer())
-        with st.spinner("⬇ Analisando música..."):
+        with st.spinner("🎧 Analisando música..."):
             try:
                 bpm_lista = estimar_bpm_multiplos(caminho)
                 tom = estimar_tom(caminho)
@@ -63,28 +77,46 @@ if opcao == "⬆️ Analisar BPM e Tom de música via upload":
                 st.write(f"**BPMs estimados:** {bpm_lista}")
                 st.write(f"**Tom estimado:** {tom}")
             except Exception as e:
-                st.error(f"❌ Erro ao analisar a música: {e}")
+                st.error(f"❌ Erro: {e}")
             finally:
                 if os.path.exists(caminho):
                     os.remove(caminho)
 
-elif opcao == "📂 Pesquisar no repertório Oitava Music pré-definido":
+# ---- YouTube via API ----
+elif opcao == "🔗 YouTube (via API)":
+    link = st.text_input("Cole o link do YouTube aqui:")
+    if st.button("Analisar do YouTube"):
+        if not link.strip():
+            st.warning("⚠ Informe um link válido primeiro.")
+        else:
+            with st.spinner("⬇ Baixando e analisando..."):
+                try:
+                    arquivo_mp3 = baixar_audio_api(link)
+                    bpm_lista = estimar_bpm_multiplos(arquivo_mp3)
+                    tom = estimar_tom(arquivo_mp3)
+                    st.success("✅ Análise concluída!")
+                    st.write(f"**BPMs estimados:** {bpm_lista}")
+                    st.write(f"**Tom estimado:** {tom}")
+                except Exception as e:
+                    st.error(f"❌ Erro: {e}")
+                finally:
+                    if os.path.exists("musica.mp3"):
+                        os.remove("musica.mp3")
+
+# ---- Repertório ----
+elif opcao == "📂 Repertório pré-definido":
     termo_busca = st.text_input("🔍 Digite o nome da música ou artista:")
 
     def filtrar_musicas(termo):
         termo = termo.lower().strip()
         if not termo:
             return REPERTORIO
-        return [
-            musica for musica in REPERTORIO
-            if (termo in musica.lower()) or 
-               (any(palavra in musica.lower() for palavra in termo.split()))
-        ]
+        return [m for m in REPERTORIO if termo in m.lower() or any(p in m.lower() for p in termo.split())]
 
     musicas_filtradas = filtrar_musicas(termo_busca)
 
     if not musicas_filtradas:
-        st.warning("Nenhuma música encontrada. Tente outro termo.")
+        st.warning("Nenhuma música encontrada.")
     else:
         escolha = st.selectbox("🎵 Selecione uma música:", musicas_filtradas)
         if escolha:
@@ -92,55 +124,21 @@ elif opcao == "📂 Pesquisar no repertório Oitava Music pré-definido":
 
         col1, col2 = st.columns(2)
 
-        # Botão do YouTube
         with col1:
             url_youtube = pesquisar_youtube(escolha)
             st.markdown(f'''
-                <a href="{url_youtube}" target="_blank" style="text-decoration: none;">
-                    <div style="
-                        display:inline-block;
-                        width:100%;
-                        max-width:180px;
-                        background-color:#FF0000; 
-                        color:white; 
-                        padding:8px 12px; 
-                        border-radius:6px; 
-                        text-align:center; 
-                        font-weight:bold; 
-                        font-size:14px;
-                        box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-                        transition: all 0.2s;
-                        margin-bottom:4px;
-                    "
-                    onmouseover="this.style.backgroundColor='#CC0000'" 
-                    onmouseout="this.style.backgroundColor='#FF0000'">
+                <a href="{url_youtube}" target="_blank">
+                    <div style="background:#FF0000;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
                         🔍 YouTube
                     </div>
                 </a>
             ''', unsafe_allow_html=True)
 
-        # Botão do Cifra Club
         with col2:
             url_cifra = pesquisar_cifraclub(escolha)
             st.markdown(f'''
-                <a href="{url_cifra}" target="_blank" style="text-decoration: none;">
-                    <div style="
-                        display:inline-block;
-                        width:100%;
-                        max-width:180px;
-                        background-color:#4CAF50; 
-                        color:white; 
-                        padding:8px 12px; 
-                        border-radius:6px; 
-                        text-align:center; 
-                        font-weight:bold; 
-                        font-size:14px;
-                        box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-                        transition: all 0.2s;
-                        margin-bottom:4px;
-                    "
-                    onmouseover="this.style.backgroundColor='#45A049'" 
-                    onmouseout="this.style.backgroundColor='#4CAF50'">
+                <a href="{url_cifra}" target="_blank">
+                    <div style="background:#4CAF50;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
                         🎼 Cifra Club
                     </div>
                 </a>
