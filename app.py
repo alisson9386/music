@@ -164,12 +164,7 @@ elif opcao == "📂 Repertório pré-definido Oitava Music":
     if not musicas_filtradas:
         st.warning("Nenhuma música encontrada.")
     else:
-        escolha = st.selectbox(
-            "🎵 Selecione uma música:",
-            options=musicas_filtradas,
-            index=None,  # deixa sem valor selecionado
-            placeholder="Escolha..."
-        )
+        escolha = st.selectbox("🎵 Selecione uma música:", musicas_filtradas)
 
         if escolha:
             st.success(f"✅ Você selecionou: **{escolha}**")
