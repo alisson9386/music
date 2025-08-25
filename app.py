@@ -50,6 +50,47 @@ def pesquisar_cifraclub(musica):
     query = musica.split("(")[0].strip().replace(" ", "-").lower()
     return f"https://www.cifraclub.com.br/?q={query}"
 
+# ----------------- NOVA FUNÇÃO -----------------
+def tentar_baixar_youtube(video_url):
+    tentativas = []
+
+    # 1 - SaveFrom (exemplo de endpoint, pode mudar)
+    try:
+        r = requests.get(
+            "https://worker.savefrom.net/api/convert",
+            params={"url": video_url},
+            timeout=10
+        )
+        if r.ok and "url" in r.json():
+            link_mp3 = r.json()["url"]
+            audio = requests.get(link_mp3)
+            if audio.ok:
+                with open("musica.mp3", "wb") as f:
+                    f.write(audio.content)
+                return "musica.mp3"
+    except Exception as e:
+        tentativas.append(f"SaveFrom falhou: {e}")
+
+    # 2 - Y2Mate (exemplo, normalmente precisa POST)
+    try:
+        r = requests.post(
+            "https://www.y2mate.com/mates/en68/analyze/ajax",
+            data={"url": video_url},
+            timeout=10
+        )
+        if r.ok and "url" in r.json():
+            link_mp3 = r.json()["url"]
+            audio = requests.get(link_mp3)
+            if audio.ok:
+                with open("musica.mp3", "wb") as f:
+                    f.write(audio.content)
+                return "musica.mp3"
+    except Exception as e:
+        tentativas.append(f"Y2Mate falhou: {e}")
+
+    # Se todas falharem
+    raise Exception("Não consegui baixar automaticamente.\n\n" + "\n".join(tentativas))
+
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
 st.title("🎶 Acervo de músicas - alisson9386")
@@ -57,13 +98,13 @@ st.title("🎶 Acervo de músicas - alisson9386")
 opcao = st.radio(
     "Selecione uma opção:",
     [
-        "⬆️ Upload de arquivo", 
-        #"🔗 YouTube (via API)", 
-        "📂 Repertório pré-definido"]
+        "⬆️ Analisar música via upload de arquivo", 
+        #🔗 YouTube (via API)", 
+        "📂 Repertório pré-definido Oitava Music"]
 )
 
 # ---- Upload direto ----
-if opcao == "⬆️ Upload de arquivo":
+if opcao == "⬆️ Analisar música via upload de arquivo":
     arquivo = st.file_uploader("Envie a música (MP3 ou M4A)", type=["mp3", "m4a"])
     if arquivo:
         caminho = f"temp_{arquivo.name}"
@@ -89,60 +130,72 @@ elif opcao == "🔗 YouTube (via API)":
         if not link.strip():
             st.warning("⚠ Informe um link válido primeiro.")
         else:
-            with st.spinner("⬇ Baixando e analisando..."):
+            with st.spinner("⬇ Tentando baixar e analisar..."):
                 try:
-                    arquivo_mp3 = baixar_audio_api(link)
+                    arquivo_mp3 = tentar_baixar_youtube(link)
                     bpm_lista = estimar_bpm_multiplos(arquivo_mp3)
                     tom = estimar_tom(arquivo_mp3)
                     st.success("✅ Análise concluída!")
                     st.write(f"**BPMs estimados:** {bpm_lista}")
                     st.write(f"**Tom estimado:** {tom}")
                 except Exception as e:
-                    st.error(f"❌ Erro: {e}")
+                    st.error("❌ Não consegui baixar do YouTube automaticamente.")
+                    st.info("⬆️ Por favor, faça upload da música no campo de upload de arquivos.")
                 finally:
                     if os.path.exists("musica.mp3"):
                         os.remove("musica.mp3")
 
+
 # ---- Repertório ----
-elif opcao == "📂 Repertório pré-definido":
+elif opcao == "📂 Repertório pré-definido Oitava Music":
     termo_busca = st.text_input("🔍 Digite o nome da música ou artista:")
 
-    def filtrar_musicas(termo):
+    def filtrar_musicas(termo: str):
         termo = termo.lower().strip()
         if not termo:
             return REPERTORIO
-        return [m for m in REPERTORIO if termo in m.lower() or any(p in m.lower() for p in termo.split())]
+        
+        palavras = termo.split()
+        return [m for m in REPERTORIO if all(p in m.lower() for p in palavras)]
+
 
     musicas_filtradas = filtrar_musicas(termo_busca)
 
     if not musicas_filtradas:
         st.warning("Nenhuma música encontrada.")
     else:
-        escolha = st.selectbox("🎵 Selecione uma música:", musicas_filtradas)
+        escolha = st.selectbox(
+            "🎵 Selecione uma música:",
+            options=musicas_filtradas,
+            index=None,  # deixa sem valor selecionado
+            placeholder="Escolha..."
+        )
+
         if escolha:
             st.success(f"✅ Você selecionou: **{escolha}**")
 
         col1, col2 = st.columns(2)
 
-        with col1:
-            url_youtube = pesquisar_youtube(escolha)
-            st.markdown(f'''
-                <a href="{url_youtube}" target="_blank">
-                    <div style="background:#FF0000;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
-                        🔍 YouTube
-                    </div>
-                </a>
-            ''', unsafe_allow_html=True)
+        if(escolha):
+            with col1:
+                url_youtube = pesquisar_youtube(escolha)
+                st.markdown(f'''
+                    <a href="{url_youtube}" target="_blank">
+                        <div style="background:#FF0000;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
+                            🔍 YouTube
+                        </div>
+                    </a>
+                ''', unsafe_allow_html=True)
 
-        with col2:
-            url_cifra = pesquisar_cifraclub(escolha)
-            st.markdown(f'''
-                <a href="{url_cifra}" target="_blank">
-                    <div style="background:#4CAF50;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
-                        🎼 Cifra Club
-                    </div>
-                </a>
-            ''', unsafe_allow_html=True)
+            with col2:
+                url_cifra = pesquisar_cifraclub(escolha)
+                st.markdown(f'''
+                    <a href="{url_cifra}" target="_blank">
+                        <div style="background:#4CAF50;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;font-weight:bold;">
+                            🎼 Cifra Club
+                        </div>
+                    </a>
+                ''', unsafe_allow_html=True)
 
 # ----------------- Rodapé -----------------
 st.markdown("""
