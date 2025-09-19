@@ -100,7 +100,8 @@ opcao = st.radio(
     [
         "⬆️ Analisar música via upload de arquivo", 
         #🔗 YouTube (via API)", 
-        "📂 Repertório pré-definido Oitava Music"]
+        #"📂 Repertório pré-definido Oitava Music"
+        ]
 )
 
 # ---- Upload direto ----
