@@ -105,7 +105,7 @@ opcao = st.radio(
 )
 
 # ---- Upload direto ----
-if opcao == "⬆️ Analisar música via upload de arquivo":
+if opcao == "⬆️ Analisar BPM e TOM de música via upload de arquivo":
     arquivo = st.file_uploader("Envie a música (MP3 ou M4A)", type=["mp3", "m4a"])
     if arquivo:
         caminho = f"temp_{arquivo.name}"
