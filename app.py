@@ -93,7 +93,7 @@ def tentar_baixar_youtube(video_url):
 
 # ----------------- INTERFACE STREAMLIT -----------------
 st.set_page_config(page_title="🎶 Analisador de Música", page_icon="🎵")
-st.title("🎶 Acervo de músicas - alisson9386")
+st.title("🎶 Análise de músicas - alisson9386")
 
 opcao = st.radio(
     "Selecione uma opção:",
